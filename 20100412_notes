@@ -1,0 +1,129 @@
+Abstraction and Data Directed Systems
+
+Build a system to handle Complex numbers 
+ie - 2 + 2i, where 2 is "real" and 2i is "imaginary" (where i^2 = -1 ???)
+
+Remember, pretend that what you need exists, and then fill in the implementation details as needed
+
+This is the "rectangular" representation of the problem
+(define (make-complex real imag)
+	(cons real imag))
+
+(define (real-part z)
+	(car z))
+
+(define (imag-part z)
+	(cdr z))
+
+Where magnitude r = sqrt(x^2 + y ^2)...
+(define (magnitude z)
+	(sqrt (+ (square (real-part z)
+			 (square (imag-part z))))))
+
+Where angle A = arctan(y, x)...
+(define (angle z)
+	(atan (imag-part z) (real-part z)))
+
+(define (add-complex z1 z2)
+	(make-complex (+ (real-part z1) (real-part z2))
+				  (+ (imag-part z1) (imag-part z2))))
+
+(define (sub-complex z1 z2)
+	(make-complex (- (real-part z1) (real-part z2))
+				  (- (imag-part z1) (imag-part z2))))
+
+(define (mul-complex z1 z2)
+	(make-complex (* (magnitude z1) (magnitude z2))		<- 
+				  (+ (angle z1) (angle z2))))
+
+Or, you could represent as magnitude and angle, where the add/sub/mult are all the same as well.  Complex numbers defined as such are called "polar"
+(define (make-complex mag ang)
+	(cons mag ang))
+
+(define (magnitude z)
+	(car z))
+
+(define (angle z)
+	(cdr z))
+
+Where x = magnitude * cos(a)...
+(define (real-part z)
+	(* (cos (angle z)) (magnitude z)))
+
+Where y = magnitude * sin(a)...
+(define (imag-part z)
+	(* (sin (angle z)) (magnitude z)))
+	
+How can we put both polar and rectangular representations into the same namespace?  You can, by "Tagging" the data.
+(define (attach-type tag contents)
+	(cons tag contents))
+
+To get the data by tag...
+(define (type data)
+	(if (pair? datum)
+		(car datum)
+		(error "Bad data")))
+
+To get the payload itself...
+(define (content data)
+	(if (pair? datum)
+		(cdr datum)
+		(error "Bad data")))
+
+To determine which, write helper functions...
+(define (rectangular? z)
+	(eq? (type z) 'rectangular))
+
+(define (polar? z)
+	(eq? (type z) 'polar))
+
+*******************
+Now, make all make-complex impls point to make-complex-polar, change magnitude to magnitude-polar, angle to angle-polar, real-part to real-part-polar and imag-part to imag-part-polar.  Same for the rectangle impls, and you don't have namespace collisions.  However, you have the same code represented multiple times, which can be optimized.  See David's code, but this is the gist:
+
+(define (make-complex-polar real imag)
+	(attach type 'polar (cons real imag)))
+(define (make-complex-rect real imag)
+	(attach type 'rectangular (cons real imag)))
+
+What if you had to add ANOTHER type?  That would mean adding new dispatchers for each new type defined - painful.  The better solutions is to create a dispatch table:
+
+			POLAR			RECT
+Angle	angle-polar		angle-rect
+Mag.		...				...
+Real
+Imag
+
+Need the following methods:
+(put <op> <type> <funct>)
+(get <op> <type>)
+
+See section 2.4.3 for the listing, but add the following to the external interfaces:
+(put 'add-complex (lambda (z1 z2)
+	(make-from-real-imag (+ (...)))))
+
+(define (apply-generic op . args) 
+	(let ((type-tags (map type-tag args)))		(let ((proc (get op type-tags))) 
+			(if proc				(apply proc (map contents args)) 
+				(error "No method for these types -- APPLY-GENERIC" (list op type-tags))))))
+
+To add them, you would have:
+(define (add x y) (apply-generic 'add x y))
+(define (sub x y) (apply-generic 'sub x y))
+(define (mul x y) (apply-generic 'mul x y))
+...
+
+Can we use these same concepts to re-implement our rational number system?  Yes.  And in doing so, we're building a new dimension to our dispatch table, splitting up between rational and complex numbers, where complex has sub-strata for polar and rectangular.
+
+Note that the rational package supports fractions, but the complex package does not.  How do you then handle:
+(1/2 + 3/7i) + (3/4 + 2/5i)
+
+In the 'add-complex function, substitute the "+" operator for the "add" function already defined within the rational package.  The tagging structure will delegate appropriately.
+
+
+
+
+
+
+
+
+

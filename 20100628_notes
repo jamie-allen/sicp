@@ -1,0 +1,78 @@
+CONCURRENCY
+Not until we added assignment that we cared about time.  No side effects, idempotent.
+You can serialize the operations on an account by establishing a mutex within that account, but what about multi-account operations (such as transferring money)?
+Need to define the serialization mechanism as retrievable from the account so that something external can define the length of the transaction
+Watch out for deadlocks.  (Thanks, guys)
+
+STREAMS
+Two seemingly-different functions are actually very similar:
+Sum of odd squares:
+	- Enumerating tree
+	- Filter for odd
+	- Map the squares
+	- Accumulate +, 0
+
+(define (sum-odd-squares tree)
+	(cond ((null? tree) 0)
+		((not (pair? tree))
+			(if (odd? tree) (square tree) 0))
+		(else (+ (sum-odd-squares (car tree))
+			(sum-odd-squares (cdr tree))))))
+
+- BECOMES -
+
+(define (sum-odd-squares tree)
+	(accumulate +
+		0
+		(map square
+			(filter odd?
+				(enumerate-tree tree)))))		
+
+Even fibonaccis:
+	- Enumerate integers
+	- Map fibs
+	- Filter for even
+	- Accumulate cons, '()
+
+(define (even-fibs n)
+	(define (next k)
+		(if (> k n)
+			'()
+			(let ((f (fib k)))
+				(if (even? f)
+					(cons f (next (+ k 1)))
+					(next (+ k 1))))))
+	(next 0))
+
+- BECOMES -
+
+(define (even-fibs n)
+	(accumulate cons
+		'()
+		(filter even?
+			(map fib
+				(enumerate-interval 0 n)))))
+
+
+This breaks down when you're doing too much work in a shared module that you don't need.  Could crash the program, at worst.  Now you are doing each of these areas to completion prior to working on the next step.  The solution is streaming.
+
+(car (cdr (filter prime?
+	(enumerate-interval 10000 1000000))))
+
+Streams are like normal order, but it's not the same.  Deferring the evaluation means that Assignment and normal order do not play well together, because someone could assign something that has not yet been evaluated for the first time.
+
+(define-syntax cons-stream
+	(syntax-rules ()
+		((_ a b)
+			(cons a (delay b)))))
+
+This is a macro that re-writes your code to delay the evaluation.
+(define (stream-car s)
+	(car s))
+
+(define (stream-cdr s)
+	(force (cdr s)))
+
+Delay and Force are built-ins.  Delay is a procedure which promises to evaluate b later.  Force is what makes the evaluation happen.
+
+What this allows us to do is build a cons of (10000, promise lambda of evaluating the cdr of the data structure), which isn't evaluated until the filter is iterating over the enumeration.  So it is as if the filter is introduced into the creation of the enumeration, and you don't end up with a full enumeration but only those that meet the filter, cons'd together as the answers only.

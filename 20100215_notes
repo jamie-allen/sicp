@@ -1,0 +1,98 @@
+The "factorial" procedure is linear recursive process.
+The "fact-iter" procedure is linear iterative process.
+
+Recursive procedure, where a procedure refers (either directly or indirectly) to itself.  Builds up a chain of deferred operations.  State must be stored, and you cannot stop and re-enter the process in the middle of running.
+
+Iterative process, when expanded, it doesn't necessarily need to keep track of other information.  For example, with the three variables passed into "fact-iter", all it needs is to know those values.
+Recursive process has an expanding number of values it has to keep track of to evaluate.  These values are kind of hidden away, maintained in the interpreter but not placed into variables.  It is about how the process evolves, not how it is written.
+
+Linear recursion has time growth of Order(n) - as we increase n, the number of steps/operations increases
+Linear recursion has space growth also of 0(n) - as we increase n, the number of deferred operations increases
+
+Linear iterative has the same time growth of O(n)
+Linear iterative has the space growth of O(1) - no matter how many times we call, there are no deferred operations
+
+--------------------------------------
+Exercise 1.9
+First one is a recursive procedure that creates a linear recursive process.  Both time and space Big O notation are linear.
+(+ 4 5)
+(inc (+ 3 5))
+(inc (inc (+ 2 5)))
+(inc (inc (inc (+ 1 5))))
+(inc (inc (inc (inc (+ 0 5)))))
+(inc (inc (inc (inc (5)))))
+(inc (inc (inc (6))))
+(inc (inc (7)))
+(inc (8))
+9
+
+Second is recursive procedure that creates an iterative process.  Only the time Big O notation is linear, as space is still O(1).
+(+ 4 5)
+(+ 3 6)
+(+ 2 7)
+(+ 1 8)
+(+ 0 9)
+9
+
+"Tail Recursion" must be the last statement to be evaluated in the procedure.
+
+Exercise 1.10
+1024
+65536
+65536
+
+2n
+2n^2
+2^(h(n - 1))
+--------------------------------------
+
+"Tree Recursive" involves two or more recursions being evaluated at a time, expanding in a downward tree shape.  Work may be duplicated in the tree.  In general, the number of steps required by a tree-recursive process will be proportional to the number of nodes in the tree, while the space required will be proportional to the maximum depth of the tree.
+
+--------------------------------------
+Exercise 1.11
+(define (f-recursive n)
+  (if (< n 3)
+      n
+      (+ (f-recursive (- n 1))
+         (* 2 (f-recursive (- n 2)))
+         (* 3 (f-recursive (- n 3))))))
+ 
+; iterative solution:
+(define (f-iterative n)
+  (define (iter i f-1 f-2 f-3)
+    (if (= i n)
+        f-1
+        (iter (+ 1 i)
+              (+ f-1 (* 2 f-2) (* 3 f-3))
+              f-1
+              f-2)))
+  (if (< n 3)
+      n
+      (iter 3 4 2 1)))
+--------------------------------------
+
+Exercise 1.12
+
+
+"Order of Growth" (aka "Theta Notation") measures the resources required by a process as the inputs become larger.  If there is division involved, there's a good chance the order of growth is a logarithmic function.
+
+"Big O Notation" is upper bound, less exact than Theta Notation.  Not as rigorous, whereas Theta is precise.  
+
+"Big Omega Notation" is lower bound.
+
+--------------------------------------
+Exercise 1.14
+(cc 11 5)
+(+ (cc 11 4) (cc (- 11 50) 5))
+(+ (+ (cc 11 3) (+ (cc (- 11 25) 4) (cc (- 11 50) 5))))
+ugh
+--------------------------------------
+Exercise 1.15a
+
+Exercise 1.15b
+
+--------------------------------------
+
+Exercise 1.16
+
+"Successive squaring".

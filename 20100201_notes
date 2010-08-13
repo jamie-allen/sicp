@@ -1,0 +1,46 @@
+
+"Normal Order": Flesh out all functions and values before computing value.  Think lazy.  Substitutes procedure body first.  Only simplifies once all replacements of values and functions has been completed to their lowest level.  Haskell, macros in C.
+"Applicative Order": Break out into individual subfunctions and evaluate to avoid repetitiveness.  Does arguments first before evaluating the function call, if the arguments are expressions themselves.
+
+Predicate: an expression whose value is interpreted as true or false (such as a condition in an if statement, or a case)
+"cond" can be used for multiple predicate cases
+"else" can be used for any final predicate in a conditional
+"if" is used when there are exactly two possibilities.  this is a "special form".  Functions are always applicative, but special forms can break this.
+"and" and "or" are special forms, since not all expressions in the conditional may be executed if the condition fails at any point
+"not" is an ordinary procedure
+"declarative descriptions" is "what is"
+"imperative descriptions" is "how to"
+A formal parameter of a procedure has a very special role in the procedure definition, in that it doesn't matter what name the formal parameter has.  Such a name is called a "bound variable", and we say that the procedure definition "binds" its formal parameters.  If it is not bound, it is "free".  The set of expressions for which a binding defines a name is called the "scope" of that name.
+Nesting of procedure definitions is called "block structure."  "Lexical scoping" is saying how far a free variable is available within a block structure.
+Special syntactic forms that are simply convenient alternative surface structures for things that can be written in more uniform ways are sometimes called "syntactic sugar." 
+
+Exercise 1.1:
+10
+12
+8
+3
+6
+nothing
+nothing
+19
+(#f?)
+4 (#promise?)
+16 (#promise?)
+6
+16
+
+Exercise 1.2:
+(/ (+ 5 4 (- 2 (- 3 (+ 6 (/ 4 5))))) (* 3  (*(- 6 2) (- 2 7)))) = 37 / 150?
+
+Exercise 1.3:
+(define (myVal x y z)
+(cond (and (or (> x y) (> x z)) (or (> y x) (> y z))) (+ (* x x) (* y y))
+      (and (or (> y x) (> y z)) (or (> z x) (> z y))) (+ (* y y) (* z z))
+      (else (+ (* x x) (* z z)))))
+
+Exercise 1.4:
+If b is greater than 0, add a and b.  Otherwise, subtract b from a.
+
+Exercise 1.5:
+With normal order, the y evaluates to (p) first, but this is an infinite loop because it's (p), not p.  In applicative order, it isn't evaluated to (p) until it needs it as a return value - but it should always return 0, and y isn't evaluated.  If x is not equal to 0, it would be an infinite loop.
+

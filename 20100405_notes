@@ -1,0 +1,74 @@
+Permutations
+
+(define (permutations s)
+	(if (null? s)								; empty set?
+		(list '())								; sequence containing empty set?
+		(flatmap (lambda (x)
+			(map (lambda (p) (cons x p))
+				(permutations (remove x s))))
+			s)))
+			
+			
+CONS
+(define (cons a b)
+	(lambda (x)
+		(cond ((= x 1) a)
+			((= x 2) b))))
+
+(define (car n)
+	(n 1))
+	
+(define (cdr n)
+	(n 2))
+	
+DERIVATIVES
+(define deriv
+	(lambda (f)
+		(lambda (x)
+			(/ (- (f (+ x dx))
+				  (f x))
+			dx))))
+
+(define dx .000001)
+
+The derivative of a constant C with respect to X = 0
+dc/dx = 0
+
+The derivative of a constant X with respect to itself = 1
+dx/dx = 1
+
+The derivative of U + V with respect to X = du/dx + dv/dx
+du/dx + dv/dx, where u and v are complex terms in and of themselves, not constant values
+
+d(uv)/dx = u(dv/dx) + v(du/dx)
+
+addend = first term in a sum
+augend = second term of a sum
+
+(deriv '(+ x 3) 'x)
+(+ 1 0)
+
+(sum? e)
+(addend e)
+(augend e)
+(variable? e)
+(same-variable? v1 v2) 			-> tells you to use dx/dx = 1
+
+*************************
+First, figure out how this should be structured, and then build the required functions to be used as part of it.
+
+(define (deriv exp var)
+	(cond ((number? exp) 0)
+	      ((variable? exp)
+	        (if (same-variable? exp var) 1 0))
+	      ((sum? exp)
+	          (make-sum (deriv (addend exp) var)
+	          			(deriv (augend exp) var)))
+	      (else
+	          (error "No idea!"))))
+
+(define (variable? x)
+	(symbol? x))
+
+(define (same-variable? v1 v2)
+	

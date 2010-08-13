@@ -1,0 +1,90 @@
+With a procedure, it matters where it is defined, not used.  If it is defined in one frame and used in another, the parent frame for that procedure is where it is defined, not the frame that called it.
+
+When procedure is called, it defines a frame and binds the parameters based upon its current context.  Formal params are passed by value, but they are ALL  references.  You're not getting the value, you're getting the pointer to the value.
+
+Let defines AND CALLS your lambda.  Does that mean a let builds a stack frame with reference to the let's frame?  Or does a previously defined procedure still get its frame from its defining frame?  Yes, it does.  It is bound to where it was defined.
+
+(define y 10)
+(define (foo x)
+	(define (baz)
+		(* y 2))
+	(define (bar)
+		(let ((y 100))
+			(baz)))
+		(bar))
+
+Mutating Lists:
+
+x = ((a b) c d))
+y = (e f)
+
+(set-car! x y)
+x = ((e f) c d)
+
+(define z (cons y (cdr x)))
+z = ((e f) c d)
+
+(set-cdr! x y)
+x = ((a b) e f)
+
+******************************
+
+(define (append x y)
+	(if (null? x)
+		y
+		(cons (car x) (append (cdr x) y))))
+(define x (list 1 2 3))
+(define y (list 9 8 7))
+(append x y) = '(1 2 3 9 8 7)
+
+******************************
+
+To make it mutate the structure, do this:
+
+(define (append! x y)
+	(set-cdr! (last-pair x) y)
+	x)
+
+(define (last-pair x)
+	(if (null? (cdr x))
+		x
+		(last-pair (cdr x))))
+
+******************************
+
+(define x (list 'a 'b))
+(define z1 (cons x x))
+z1 = '((a b) a b)
+
+(define z2 (cons (list 'a 'b) (list 'a 'b)))
+z2 = '((a b) a b)
+
+(define (set-to-wow! x)
+	(set-car! (car x 'wow)
+	x)
+z1 = '((a b) a b)
+z2 = '((a b) a b)
+(set-to-wow! z1) = '((wow b) wow b) <- sets the car of a, changes both! car and cdr are the same list!  Shared data!
+(set-to-wow! z2) = '((wow b) a b)   <- Uses values specifically defined for both car and cdr, so no unexpected side effect
+
+(eq? (car z2) (cdr z2)) = false (when values reset to originals) - two different lists
+(equal? (car z2) (cdr z2)) = true, but how deep will that go?  works here, though
+
+
+******************************
+
+QUEUES:
+
+(define (insert-queue! queue item) 
+	(let ((new-pair (cons item ’())))		(cond ((empty-queue? queue) 
+			 (set-front-ptr! queue new-pair) 
+			 (set-rear-ptr! queue new-pair) 
+			 queue)			(else 
+			 (set-cdr! (rear-ptr queue) new-pair)
+			 (set-rear-ptr! queue new-pair) 
+			 queue))))
+
+
+
+
+

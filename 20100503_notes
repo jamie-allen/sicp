@@ -1,0 +1,26 @@
+#f = false
+
+Building a map is easy.  Building a table that has more than key/value requires another level of indirection.  Need a "backbone" at each level of indirection to manage each record and link them together.
+
+Code - The Hidden Language of Hardware/Software, by Charles Petzold
+http://www.amazon.com/Code-Language-Computer-Hardware-Software/dp/0735611319
+
+
+Section 3.3.4 - HALF-ADDER:
+To add, you have a binary 0:1 table, where you "SUM" 
+	0:0 = 0
+	0:1 = 1
+	1:0 = 1
+	1:1 = 0 (but "CARRY" the 1 to the next bit)
+
+The Carry table looks like this:
+	0:0 = 0
+	0:1 = 0
+	1:0 = 0
+	1:1 = 1 (because this is the only condition where you carry)
+
+With two half-adders, you have a FULL-ADDER, which allows you to sum and carry for a single bit.  Is it 0, 1 and with a carry?  With 8 full adders, you can compute an entire byte of data.
+
+
+
+

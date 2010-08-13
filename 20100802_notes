@@ -1,0 +1,8 @@
+Following the last session (6/28), define these macros.  The first ensures that the applicative order won't evaluate the delayed Cdr value in the list.
+
+(define-syntax delay
+	(syntax-rules ()
+		((_ p)
+			(memo-proc (lambda () p)))))
+
+The memo-proc function is another macro to execute the now-lambda Cdr, but only once.  To execute that lambda, use the force built-in function.

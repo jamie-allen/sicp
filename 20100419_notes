@@ -1,0 +1,103 @@
+Assignment:
+(define x 20)
+(set! x 23)
+
+Timing matters.  x will have different values depending on WHEN you ask.
+You can redefine x only in a REPL.  Not in running code.
+
+(define balance 100)
+(if (>= balance amount)
+	(set! balance (- balance amount))
+	(display "insufficient funds)))
+
+Keyword "begin" takes any number of expressions and evaluates them.
+(if (>= balance amount)
+	(begin (set! balance (- balance amount))
+		balance)
+	(display "insufficient funds")))
+
+To move the scope of the balance, you can use a let.  This locally scopes the balance you're manipulating to this function.
+(define new-withdraw
+	(let ((balance 100))
+		(lambda (amount)
+			(if (>= balance amount)
+				(begin (set! balance (- balance amount))
+					balance)
+				(display "insufficient funds")))))
+But without the paren before new-withdrawal, the let sets the "balance" in the environment where it is interpreted (global, in this case).  Putting in the paren would have deferred the execution of the let.
+
+If we define this:
+(define (make-withdraw balance)
+	(lambda (amount)
+		(if (>= balance amount)
+			(set! balance (- balance amount))
+		"insufficient funds)))
+And then use it as such: (define matt (make-withdraw 100)), and call (matt 25), you get 75.
+
+New concept "dispatch" with a symbol - hey you, lookup and do 'this.
+(define (make-account balance) 
+	(define (withdraw amount) 
+		(if (>= balance amount)			(begin (set! balance (- balance amount)) 
+				balance)			"Insufficient funds"))
+	(define (deposit amount)		(set! balance (+ balance amount))			balance) 
+	(define (dispatch m)		(cond ((eq? m ’withdraw) withdraw) 
+			  ((eq? m ’deposit) deposit) 
+			  (else (error "Unknown request -- MAKE-ACCOUNT" 
+			  	m))))	dispatch)
+
+THIS IS A CLOSURE - you've isolated balance to the scope of the new lambda make-account!  You can then call:
+(define (matt (make-account 100)))
+((matt 'withdraw) 25)
+
+and get 75
+
+
+SECTION: 3.2.1
+A frame is a component of the overall scope in the system
+
+There is a procedure object that is applied to a set of arguments and creates a frame.  In that frame, it binds the formal params to that procedure and evaluates the body of the procedure in the context of the environment in which it was constructed.  The "let" created that frame earlier.
+
+The procedure is created by evaluating the lambda expression at the moment it is defined.  Evaluated relative to the environment in which it is defined.  You get a pair (the body of the lambda, pointer to the environment in which it was created).
+
+Calling it creates a new frame, attached to the global context, with a copy of the body of the procedure.  Formal params get bound into this frame by value.  Evaluates the body of the procedure, replacing all values in the expression to evaluate.
+
+(define (square x)		<- square gets its pair
+	(* x x))
+(define x 23) 			<- global
+(square 3) returns 9	<- creates frame with its own x
+
+(define (foo y)
+	(* x y))
+(foo 10) returns 230	<- x was global
+
+A "bound variable" means that it is bound in an environment if all instances of "x" could be changed to "w" and no result changed.
+(define square x)
+	(* x x))
+
+is the same as 
+(define square w)
+	(* w w))
+
+So "x" is bound to "square"
+
+(define (foo x)
+	(* x y))
+You can replace x, but you cannot replace y.  Changing "y" to "w" could fundamentally change the way this function works.  "y" is free.  It is impacted by external state.  Scary in a functional world.
+
+(define (factorial n)
+	(let ((product 1)
+		  (counter 1))
+		(define (iter)
+			(if (> count n)
+				product
+				(begin (set! product (* counter product))
+					   (set! counter (+ counter 1))
+					   (iter))))
+		(iter)))
+
+
+
+
+
+
+
